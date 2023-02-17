@@ -1,0 +1,6 @@
+# Ignore the build artifacts.
+zig-out/
+zig-cache/
+
+# Ignore IDE configurations.
+.vscode/
