@@ -7,8 +7,10 @@ const bitvector = @import("bitvector");
 pub const Node = struct {
     symbol: u8,
     frequency_count: usize,
-    left_index: i16,
-    right_index: i16,
+    left_right_indexes: struct {
+        left: i16,
+        right: i16,
+    },
     pub const null_idx = -1;
     pub const interior_node_symbol = '*';
 };
@@ -35,6 +37,30 @@ pub fn createTree(
         .root_idx = undefined,
     };
 
+    // Populate the storage with all the leaf symbols.
+    // Add the leaves to the heap.
+    var total_nodes: usize = 0;
+    for (histogram) |count| {
+        if (count == 0) {
+            continue;
+        }
+        total_nodes += 1;
+    }
+    try tree.nodes.setCapacity(allocator, 2 * total_nodes - 1);
+    for (histogram) |count, symbol| {
+        if (count == 0) {
+            continue;
+        }
+        tree.nodes.appendAssumeCapacity(Node{
+            .symbol = @intCast(u8, symbol),
+            .frequency_count = count,
+            .left_right_indexes = .{
+                .left = Node.null_idx,
+                .right = Node.null_idx,
+            },
+        });
+    }
+
     // Create the priority queue.
     // A Huffman tree will have 2N-1 node, where N is the possible number of
     // symbols. If we consider N=256, for all possible byte values, then the max
@@ -50,20 +76,10 @@ pub fn createTree(
     ).init(queue_buffer_allocator, HeapContext{
         .storage = &tree.nodes,
     });
-
-    // Populate the storage with all the leaf symbols.
-    // Add the leaves to the heap.
-    for (histogram) |count, symbol| {
-        if (count == 0) {
-            continue;
-        }
-        try tree.nodes.append(allocator, Node{
-            .symbol = @intCast(u8, symbol),
-            .frequency_count = count,
-            .left_index = Node.null_idx,
-            .right_index = Node.null_idx,
-        });
-        try heap.add(@intCast(i16, tree.nodes.len - 1));
+    try heap.ensureTotalCapacity(2 * tree.nodes.len - 1);
+    var i: i16 = 0;
+    while (i < @intCast(i16, tree.nodes.len)) : (i += 1) {
+        try heap.add(i);
     }
 
     // Pop two nodes off the heap and join them until only 1 node remains.
@@ -74,9 +90,11 @@ pub fn createTree(
         const left = heap.remove();
         const right = heap.remove();
         var counts = tree.nodes.items(.frequency_count);
-        try tree.nodes.append(allocator, Node{
-            .left_index = left,
-            .right_index = right,
+        tree.nodes.appendAssumeCapacity(Node{
+            .left_right_indexes = .{
+                .left = left,
+                .right = right,
+            },
             .symbol = Node.interior_node_symbol,
             .frequency_count = counts[@intCast(usize, left)] + counts[@intCast(usize, right)],
         });
@@ -117,16 +135,16 @@ fn make_codes_recursive(
 
     // Left
     try bv.appendBit(false);
-    try make_codes_recursive(tree, node.left_index, codes, bv);
+    try make_codes_recursive(tree, node.left_right_indexes.left, codes, bv);
     _ = bv.pop();
 
     // Right
     try bv.appendBit(true);
-    try make_codes_recursive(tree, node.right_index, codes, bv);
+    try make_codes_recursive(tree, node.left_right_indexes.right, codes, bv);
     _ = bv.pop();
 
     // Self.
-    if (node.left_index == Node.null_idx and node.right_index == Node.null_idx) {
+    if (node.left_right_indexes.left == Node.null_idx and node.left_right_indexes.right == Node.null_idx) {
         var cloned = try bv.clone(codes.allocator);
         try codes.put(node.symbol, cloned);
     }
