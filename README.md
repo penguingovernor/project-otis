@@ -44,6 +44,19 @@ zig build
   - This assumption is based off that the pushed byte is already 0'ed out
   - Assumption fails if a `1` is pushed, then popped off, then a `0` is pushed
 
+#### Performance Improvements Over Simple C++ Implementation (Creating the Tree Only)
+
+Command to measure performance: `hyperfine --warmup 1000 --shell none ./zig-out/bin/huffman ./cpp/huffman-zig-c++ ./cpp/huffman-clang++ ./cpp/huffman-g++`
+
+CPU Specs: `11th Gen Intel i7-1165G7 (8) @ 4.700GHz`
+
+| Command                 | Compiler Version          | Mean [ms] | Min [ms] | Max [ms] |     Relative |
+| :---------------------- | :------------------------ | --------: | -------: | -------: | -----------: |
+| `./zig-out/bin/huffman` | 0.11.0-dev.1646+3f7e9ff59 | 0.1 ± 0.1 |      0.1 |      1.5 |         1.00 |
+| `./cpp/huffman-zig-c++` | clang version 15.0.7      | 1.0 ± 0.1 |      0.4 |      1.5 |  6.90 ± 4.00 |
+| `./cpp/huffman-clang++` | 14.0.0-1                  | 2.0 ± 0.1 |      1.6 |      2.4 | 14.45 ± 8.29 |
+| `./cpp/huffman-g++`     | 11.3.0                    | 2.0 ± 0.1 |      1.4 |      2.9 | 14.34 ± 8.24 |
+
 ## Project TODOs
 
 ### Huffman Coding
@@ -53,7 +66,7 @@ zig build
 - [x] Implement Huffman Code Generation
 - [ ] Write out the file.
   - [ ] Serialize the Huffman Tree
-- [ ] Write a simple implementation of Huffman Coding in C++ to compare performance.
+- [x] Write a simple implementation of Huffman Coding in C++ to compare performance.
 - [ ] Write decompressing algorithm
 
 ## FAQs
