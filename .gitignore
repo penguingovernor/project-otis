@@ -4,3 +4,6 @@ zig-cache/
 
 # Ignore IDE configurations.
 .vscode/
+
+# Ignore any test data.
+testdata/
