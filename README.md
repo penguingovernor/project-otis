@@ -109,6 +109,17 @@ It's used on the command line like so: `$ coorgen [N_COORDINATE_PAIRS] > coordin
 
 The default value for `N_COORDINATE_PAIRS` is 10e6 pairs, for 4*10e6 floating point numbers.
 
+### 8086 Emulator
+
+#### Iteration 1 (`MOV` Decoder)
+
+Added a program that can decode `MOV` instructions.
+Only register to register operations are supported.
+
+Usage: `< ASSEMBLED_16_bit_8086_FILE 8086 > out.asm`
+
+Verification: `nasm out.asm && diff out.asm ASSEMBLED_16_bit_8086_FILE`
+
 ### Huffman Coding
 
 > A Huffman code is a particular type of optimal prefix code that is commonly used for lossless data compression.
