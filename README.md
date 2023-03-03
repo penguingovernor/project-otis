@@ -15,6 +15,16 @@ Additionally, I'll try to implement data-oriented design and performance aware p
 
 ## Current Projects
 
+### Haversine
+
+#### Coordinate Generation
+
+In order to properly test our `haversine` function we need test data.
+This project includes a utility called `coorgen`, which is short for coordinate generate.
+It's used on the command line like so: `$ coorgen [N_COORDINATE_PAIRS] > coordinates.json`.
+
+The default value for `N_COORDINATE_PAIRS` is 10e6 pairs, for 4*10e6 floating point numbers.
+
 ### Huffman Coding
 
 > A Huffman code is a particular type of optimal prefix code that is commonly used for lossless data compression.
