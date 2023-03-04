@@ -28,6 +28,7 @@ pub fn build(b: *std.Build) void {
         "-Wpedantic",
         "-Werror",
         "-std=c17",
+        "-O3",
     });
     yyjson.installHeader("vendor/yyjson-0.6.0/yyjson.h", "yyjson.h");
     yyjson.install();
