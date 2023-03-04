@@ -3,6 +3,7 @@ const std = @import("std");
 const ParseError = error{
     FailedToRead,
     UnknownOpCode,
+    NonSupportedFunction,
 };
 
 pub fn main() !void {
@@ -63,6 +64,7 @@ pub fn main() !void {
         if (mod != reg_to_reg) {
             std.log.err("parser does not support non reg to reg operations\n", .{});
             std.log.err("got {x} wanted {x}\n", .{ mod, reg_to_reg });
+            return ParseError.NonSupportedFunction;
         }
 
         // RM field is dest
@@ -73,6 +75,6 @@ pub fn main() !void {
         // Write data out.
         const str = try std.fmt.allocPrint(allocator, "mov {s},{s}\n", .{ dest, src });
         _ = try wt.write(str);
-        _ = try wt.flush();
     }
+    _ = try wt.flush();
 }
