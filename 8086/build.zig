@@ -15,6 +15,30 @@ pub fn build(b: *std.Build) void {
     // set a preferred release mode, allowing the user to decide how to optimize.
     const optimize = b.standardOptimizeOption(.{});
 
+    const lib8086 = b.addStaticLibrary(.{
+        .name = "sim8086",
+        .root_source_file = .{ .path = "pkg/sim8086/sim8086.zig" },
+        .target = target,
+        .optimize = optimize,
+    });
+    lib8086.linkLibCpp();
+    lib8086.addCSourceFile("thirdparty/computer_enhance/sim86_lib.cpp", &.{});
+    lib8086.addIncludePath("thirdparty/computer_enhance");
+    lib8086.installHeader("thirdparty/computer_enhance/sim86_shared.h", "sim86_shared.h");
+    lib8086.install();
+
+    const test8086 = std.Build.CompileStep.create(b, .{
+        .name = "sim8086_test",
+        .root_source_file = .{ .path = "pkg/sim8086/sim8086_test.zig" },
+        .target = target,
+        .optimize = optimize,
+        .kind = .test_exe,
+    });
+    test8086.linkLibrary(lib8086);
+    const test8086_artifact = b.addInstallArtifact(test8086);
+    const test8086_step = b.step("test_8086", "Build the sim8086 tests");
+    test8086_step.dependOn(&test8086_artifact.step);
+
     const exe = b.addExecutable(.{
         .name = "8086",
         // In this case the main source file is merely a path, however, in more
