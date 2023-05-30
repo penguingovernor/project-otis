@@ -26,14 +26,6 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    exe_haversine.addCSourceFile("vendor/yyjson-0.6.0/yyjson.c", &[_][]const u8{
-        "-Wall",
-        "-Wextra",
-        "-Wpedantic",
-        "-Werror",
-        "-std=c17",
-    });
-    exe_haversine.addIncludePath("vendor/yyjson-0.6.0");
     b.installArtifact(exe_haversine);
     const run_haversine = b.addRunArtifact(exe_haversine);
     const step_haversine = b.step("haversine", "run the haversine program");

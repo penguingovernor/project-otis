@@ -1,5 +1,5 @@
 const std = @import("std");
-const yyjson = @import("yyjson.zig");
+const parser = @import("parser.zig");
 
 fn havDegrees(theta: anytype) @TypeOf(theta) {
     const sin_theta_by_two = @sin(
@@ -40,43 +40,24 @@ fn greatCircleDistance(
     ));
 }
 
-pub fn LatLongPair(comptime T: type) type {
-    return struct { x0: T, y0: T, x1: T, y1: T };
-}
-
-pub fn jsonPoints(comptime T: type) type {
-    return struct {
-        pairs: []LatLongPair(T),
-    };
-}
-
 pub fn main() !void {
-    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    defer arena.deinit();
-    const allocator = arena.allocator();
-
-    const args = try std.process.argsAlloc(allocator);
-    const filename = args[1];
-
     var timer = try std.time.Timer.start();
 
-    const doc = try yyjson.getDoc(filename);
-    defer yyjson.freeDoc(doc);
+    const stdin = std.io.getStdIn().reader();
+    var coordinate_parser = parser.Reader(@TypeOf(stdin)).init(stdin);
     var midtime = timer.lap();
-
-    var iter = try yyjson.getEntryIter(allocator, doc);
 
     const earth_radius_km = 6371;
     var sum: f64 = 0;
     var count: usize = 0;
 
-    while (try iter.next()) |entry| {
+    while (try coordinate_parser.next()) |entry| {
         sum += greatCircleDistance(
             f64,
-            entry.x0,
-            entry.y0,
-            entry.x1,
-            entry.y1,
+            entry[0].x,
+            entry[0].y,
+            entry[1].x,
+            entry[1].y,
             earth_radius_km,
         );
         count += 1;
