@@ -33,6 +33,7 @@ pub fn build(b: *std.Build) void {
         "-Werror",
         "-std=c17",
     });
+    exe_haversine.linkLibC();
     exe_haversine.addIncludePath("vendor/yyjson-0.6.0");
     b.installArtifact(exe_haversine);
     const run_haversine = b.addRunArtifact(exe_haversine);
